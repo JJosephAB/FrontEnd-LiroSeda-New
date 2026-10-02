@@ -1,0 +1,123 @@
+<header
+  class="flex h-[82px] items-center justify-between gap-4 border-b border-linea bg-superficie px-8"
+>
+  <!-- Ubicación actual -->
+  <div class="flex items-center gap-3 text-xs">
+    <span class="text-muted">Mi boutique</span>
+    <span class="text-muted" aria-hidden="true">/</span>
+
+    <strong class="font-semibold text-tinta">
+      {{ seccionActual() }}
+    </strong>
+  </div>
+
+  <!-- Perfil -->
+  <div class="flex items-center gap-5">
+    <span class="h-7 w-px bg-linea" aria-hidden="true"></span>
+
+    <button
+      type="button"
+      popovertarget="perfil-usuario"
+      aria-label="Ver datos de mi cuenta"
+      class="flex cursor-pointer items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-marca-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca"
+    >
+      <span
+        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-marca-suave text-[11px] font-bold text-marca"
+        aria-hidden="true"
+      >
+        LS
+      </span>
+
+      <span class="hidden sm:block">
+        <strong class="block text-[11px] font-semibold text-tinta">
+          Mi cuenta
+        </strong>
+
+        <small class="mt-1 block text-[10px] text-muted">
+          Perfil de usuario
+        </small>
+      </span>
+    </button>
+  </div>
+</header>
+
+<!-- Tarjeta desplegable del usuario -->
+<div
+  id="perfil-usuario"
+  popover
+  role="dialog"
+  aria-labelledby="titulo-perfil"
+  class="fixed inset-auto right-4 top-[74px] m-0 max-h-[calc(100dvh-90px)] w-80 max-w-[calc(100vw-32px)] overflow-y-auto rounded-2xl border border-linea bg-superficie p-0 text-tinta shadow-xl sm:right-8"
+>
+  <!-- Encabezado -->
+  <div class="flex items-center justify-between gap-3 border-b border-linea px-5 py-4">
+    <div>
+      <p class="mb-1 text-[8px] tracking-[1.4px] text-muted">
+        LIRIOSEDA · MI CUENTA
+      </p>
+
+      <h2 id="titulo-perfil" class="text-sm font-bold">
+        Datos del usuario
+      </h2>
+    </div>
+
+    <button
+      type="button"
+      popovertarget="perfil-usuario"
+      popovertargetaction="hide"
+      aria-label="Cerrar datos del usuario"
+      class="flex size-8 shrink-0 items-center justify-center rounded-lg text-xl text-muted hover:bg-marca-suave hover:text-marca"
+    >
+      ×
+    </button>
+  </div>
+
+  <!-- Identificación visual -->
+  <div class="flex items-center gap-3 px-5 py-5">
+    <span
+      class="flex size-12 shrink-0 items-center justify-center rounded-full bg-marca-suave text-sm font-bold text-marca"
+      aria-hidden="true"
+    >
+      LS
+    </span>
+
+    <div>
+      <strong class="block text-xs">
+        Test
+      </strong>
+
+      <p class="mt-1 text-[10px] text-muted">
+        Testeando
+      </p>
+    </div>
+  </div>
+
+  <!-- Datos -->
+  <dl class="space-y-4 px-5 pb-5">
+    <div>
+      <dt class="text-[10px] text-muted">Código de usuario</dt>
+      <dd class="mt-1 text-xs font-medium">No disponible</dd>
+    </div>
+
+    <div>
+      <dt class="text-[10px] text-muted">Nombre completo</dt>
+      <dd class="mt-1 text-xs font-medium">No disponible</dd>
+    </div>
+
+    <div>
+      <dt class="text-[10px] text-muted">Correo electrónico</dt>
+      <dd class="mt-1 break-words text-xs font-medium">
+        No disponible
+      </dd>
+    </div>
+
+    <div>
+      <dt class="text-[10px] text-muted">Rol</dt>
+      <dd class="mt-1">
+        <span class="inline-block rounded-md bg-marca-suave px-2 py-1 text-[10px] text-marca">
+          No disponible
+        </span>
+      </dd>
+    </div>
+  </dl>
+</div>

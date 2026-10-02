@@ -1,0 +1,96 @@
+<aside
+  class="fixed inset-y-0 left-0 flex w-[244px] flex-col border-r border-white/10 bg-marca-oscura px-5 pt-[33px] text-marca-suave"
+  aria-label="Menú principal"
+>
+  <!-- Logo y nombre -->
+  <div class="flex items-center gap-2.5 px-2.5">
+    <span class="rounded-xl bg-marca-suave p-1.5">
+      <img
+        src="assets/favicon.svg"
+        alt=""
+        width="38"
+        height="38"
+      >
+    </span>
+
+    <div>
+      <p
+        class="font-heading text-[24px] font-extrabold tracking-[-1px] text-marca-suave"
+      >
+        Lirio<span class="font-[450]">Seda</span>
+      </p>
+
+      <p class="mt-0.5 text-[8px] tracking-[2.6px] text-marca-suave/70">
+        ADMINISTRACIÓN
+      </p>
+    </div>
+  </div>
+
+  <!-- Información de la boutique -->
+  <div
+    class="mb-7 mt-9 flex items-center gap-3 rounded-[10px] border border-white/15 bg-white/5 px-3 py-[13px]"
+  >
+    <div class="rounded-lg bg-marca-suave p-2">
+      <img
+        src="assets/icons/inventario.svg"
+        alt=""
+        class="size-5"
+      >
+    </div>
+
+    <div>
+      <strong class="block text-xs font-semibold">
+        Mi boutique
+      </strong>
+
+      <small class="mt-1 block text-[10px] text-marca-suave/70">
+        Gestión de inventario
+      </small>
+    </div>
+
+    <span
+      class="ml-auto size-1.5 shrink-0 rounded-full bg-[#c7dfb5]"
+      title="Modo demostración"
+    ></span>
+  </div>
+
+  <p class="mb-3 px-[13px] text-[9px] tracking-[1.4px] text-marca-suave/60">
+    ESPACIO DE TRABAJO
+  </p>
+
+  <!-- Navegación -->
+  <nav class="flex flex-col gap-[7px]">
+    @for (item of menuItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-[#dce8da] text-marca-oscura font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        #activeLink="routerLinkActive"
+        [class.text-marca-suave]="!activeLink.isActive"
+        class="flex items-center gap-3 rounded-[9px] px-[14px] py-[13px] text-xs transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#dce8da]"
+      >
+        <img
+          [src]="item.icon"
+          alt=""
+          [class.brightness-0]="!activeLink.isActive"
+          [class.invert]="!activeLink.isActive"
+          class="size-[18px] shrink-0"
+        >
+
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <!-- Pie del menú -->
+  <div class="mt-auto pt-8">
+    <div
+      class="flex items-center gap-1.5 border-t border-white/10 py-5 text-[9px] text-marca-suave/65"
+    >
+      <span class="text-[#c7dfb5]" aria-hidden="true">✳</span>
+      <span>Hecho para crecer contigo</span>
+      <span class="ml-auto">v1.0</span>
+    </div>
+  </div>
+</aside>
