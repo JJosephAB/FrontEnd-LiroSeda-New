@@ -1,9 +1,10 @@
 export interface ProductoListado {
-  id: string;
+  idproducto: string;
   nombre: string;
-  marca: string;
-  lote: string;
-  proveedor: string;
+  modelo: string;
+  modeloId: number;
+  estado: string;
   stock: number;
+  tieneRegistroSede: boolean;
   precio: number;
 }

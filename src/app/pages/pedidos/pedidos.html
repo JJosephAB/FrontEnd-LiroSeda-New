@@ -1,311 +1,194 @@
-<!-- Encabezado -->
 <section class="mb-7 flex flex-wrap items-center justify-between gap-4">
   <div>
-    <p class="mb-2 text-[9px] tracking-[1.4px] text-muted">
-      TU BOUTIQUE, EN ORDEN
-    </p>
-
-    <h1 class="font-heading text-[28px] font-bold tracking-tight">
-      Cada pedido, bajo control.
-    </h1>
-
+    <p class="mb-2 text-[9px] tracking-[1.4px] text-muted">TU BOUTIQUE, EN ORDEN</p>
+    <h1 class="font-heading text-[28px] font-bold tracking-tight">Cada pedido, bajo control.</h1>
     <p class="mt-2 text-xs text-muted">
-      Registra y consulta las compras a tus proveedores.
+      Registra y consulta las solicitudes de productos.
+      @if (usuarioActual) { Solo se muestran registros de tu sede (#{{ usuarioActual.idSede }}). }
     </p>
   </div>
-
-  <button
-    type="button"
-    (click)="abrirPedido(pedidoDialog, datosPedido)"
-    class="rounded-lg bg-marca px-4 py-3 text-xs font-semibold text-white hover:bg-marca-oscura"
-  >
+  <button type="button" (click)="abrirPedido(pedidoDialog)"
+    class="rounded-lg bg-marca px-4 py-3 text-xs font-semibold text-white hover:bg-marca-oscura">
     + Nuevo pedido
   </button>
 </section>
 
-<!-- Indicadores -->
-<section
-  class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3"
-  aria-label="Indicadores de pedidos"
->
-  <article class="flex items-center gap-4 rounded-xl border border-linea bg-superficie p-5">
-    <span class="rounded-lg bg-marca-suave p-3">
-      <img src="assets/icons/pedidos.svg" alt="" class="size-5">
-    </span>
-
-    <div>
-      <p class="text-[11px] text-muted">Pedidos registrados</p>
-      <strong class="mt-1 block text-xl">0</strong>
-    </div>
+<section class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3" aria-label="Indicadores de pedidos">
+  <article class="rounded-xl border border-linea bg-superficie p-5">
+    <p class="text-[11px] text-muted">Pedidos registrados</p>
+    <strong class="mt-1 block text-xl">{{ pedidos.length }}</strong>
   </article>
-
-  <article class="flex items-center gap-4 rounded-xl border border-linea bg-superficie p-5">
-    <span class="rounded-lg bg-marca-suave p-3">
-      <span class="flex size-5 items-center justify-center text-xs font-bold text-marca">
-        S/
-      </span>
-    </span>
-
-    <div>
-      <p class="text-[11px] text-muted">Importe acumulado</p>
-      <strong class="mt-1 block text-xl">S/ 0.00</strong>
-    </div>
+  <article class="rounded-xl border border-linea bg-superficie p-5">
+    <p class="text-[11px] text-muted">Estados disponibles</p>
+    <strong class="mt-1 block text-xl">{{ estados.length }}</strong>
   </article>
-
-  <article class="flex items-center gap-4 rounded-xl border border-linea bg-superficie p-5">
-    <span class="rounded-lg bg-marca-suave p-3">
-      <img src="assets/icons/inventario.svg" alt="" class="size-5">
-    </span>
-
-    <div>
-      <p class="text-[11px] text-muted">Unidades solicitadas</p>
-      <strong class="mt-1 block text-xl">0</strong>
-    </div>
+  <article class="rounded-xl border border-linea bg-superficie p-5">
+    <p class="text-[11px] text-muted">Unidades solicitadas</p>
+    <strong class="mt-1 block text-xl">{{ unidadesSolicitadas }}</strong>
   </article>
 </section>
 
-<!-- Regla del pedido -->
 <div class="mb-5 rounded-lg border border-linea bg-marca-suave px-4 py-3 text-[11px] leading-relaxed text-marca">
   <strong>Pedido no es recepción.</strong>
-  Registrar una compra no incrementa el stock.
+  El endpoint de pedidos guarda el estado y los productos solicitados, no proveedor ni importe.
 </div>
 
-<!-- Listado -->
-<section
-  class="overflow-hidden rounded-2xl border border-linea bg-superficie"
-  aria-label="Listado de pedidos"
->
+@if (errorCarga()) {
+  <p role="alert" class="mb-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">
+    {{ errorCarga() }}
+  </p>
+}
+
+<section class="overflow-hidden rounded-2xl border border-linea bg-superficie" aria-label="Listado de pedidos">
   <div class="flex items-center gap-3 px-6 py-5">
     <h2 class="text-sm font-bold">Pedidos</h2>
-    <span class="rounded-md bg-marca-suave px-2 py-1 text-[10px] text-marca">
-      0
-    </span>
+    <span class="rounded-md bg-marca-suave px-2 py-1 text-[10px] text-marca">{{ pedidosFiltrados.length }}</span>
   </div>
 
-  <!-- Controles visuales -->
   <div class="flex flex-wrap items-end gap-3 px-6 pb-5">
     <div class="min-w-[200px] max-w-md flex-1">
-      <label for="busqueda-pedidos" class="mb-1.5 block text-[10px] text-muted">
-        Buscar pedido
-      </label>
-
-      <input
-        id="busqueda-pedidos"
-        type="search"
-        placeholder="Buscar por código o detalle…"
-        class="w-full rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca"
-      >
+      <label for="busqueda-pedidos" class="mb-1.5 block text-[10px] text-muted">Buscar pedido</label>
+      <input id="busqueda-pedidos" type="search" [(ngModel)]="busqueda"
+        placeholder="Buscar por código o usuario…"
+        class="w-full rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca">
     </div>
-
     <div>
-      <label for="filtro-proveedor-pedidos" class="mb-1.5 block text-[10px] text-muted">
-        Proveedor
-      </label>
-
-      <select
-        id="filtro-proveedor-pedidos"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca"
-      >
-        <option value="">Todos los proveedores</option>
+      <label for="filtro-estado-pedidos" class="mb-1.5 block text-[10px] text-muted">Estado</label>
+      <select id="filtro-estado-pedidos" [(ngModel)]="estadoFiltro"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca">
+        <option value="">Todos los estados</option>
+        @for (estado of estados; track estado.idEstado) {
+          <option [value]="estado.idEstado">{{ estado.descripcion }}</option>
+        }
       </select>
     </div>
   </div>
 
   <div class="overflow-x-auto">
-    <table class="w-full min-w-[900px] text-left text-xs">
+    <table class="w-full min-w-[850px] text-left text-xs">
       <thead class="border-y border-linea bg-[#fafcf9] text-muted">
         <tr>
-          <th scope="col" class="px-6 py-3 font-medium">Pedido</th>
-          <th scope="col" class="px-4 py-3 font-medium">Fecha</th>
-          <th scope="col" class="px-4 py-3 font-medium">Proveedor</th>
-          <th scope="col" class="px-4 py-3 font-medium">Unidades</th>
-          <th scope="col" class="px-4 py-3 font-medium">Importe total</th>
-          <th scope="col" class="px-4 py-3 font-medium">Responsable</th>
-          <th scope="col" class="px-4 py-3 font-medium">Detalle</th>
+          <th class="px-6 py-3 font-medium">Pedido</th>
+          <th class="px-4 py-3 font-medium">Fecha</th>
+          <th class="px-4 py-3 font-medium">Estado</th>
+          <th class="px-4 py-3 font-medium">Unidades</th>
+          <th class="px-4 py-3 font-medium">Usuario</th>
+          <th class="px-4 py-3 font-medium">Detalle</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
         </tr>
       </thead>
-
       <tbody>
-        <tr>
-          <td colspan="7" class="px-6 py-10 text-center text-muted">
-            No hay pedidos para mostrar.
-          </td>
-        </tr>
+        @for (pedido of pedidosFiltrados; track pedido.idPedido) {
+          <tr class="border-b border-linea hover:bg-[#fafcf8]">
+            <td class="px-6 py-4 font-semibold">{{ pedido.idPedido }}</td>
+            <td class="px-4 py-4 text-muted">{{ pedido.fechaPedido }}</td>
+            <td class="px-4 py-4">{{ nombreEstado(pedido.idEstado) }}</td>
+            <td class="px-4 py-4">{{ unidadesPedido(pedido) }}</td>
+            <td class="px-4 py-4">#{{ pedido.idUsuario }}</td>
+            <td class="px-4 py-4 text-muted">
+              @for (detalle of pedido.detalles; track detalle.idDetallePedido ?? detalle.idProducto) {
+                <span class="block">{{ nombreProducto(detalle.idProducto) }} × {{ detalle.cantidad }}</span>
+              }
+            </td>
+            <td class="px-4 py-4">
+              <button type="button" (click)="editarPedido(pedido, pedidoDialog)"
+                class="rounded-lg border border-linea px-3 py-2 text-[10px] font-semibold text-marca hover:bg-marca-suave">
+                Editar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="px-6 py-10 text-center text-muted">No hay pedidos para mostrar.</td></tr>
+        }
       </tbody>
     </table>
   </div>
-
   <div class="px-6 py-4 text-[11px] text-muted">
-    0 pedidos
+    Mostrando {{ pedidosFiltrados.length }} de {{ pedidos.length }} pedidos
   </div>
 </section>
 
-<!-- Modal -->
-<dialog
-  #pedidoDialog
-  aria-labelledby="titulo-nuevo-pedido"
-  class="m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[720px] overflow-y-auto rounded-2xl border border-linea bg-superficie p-0 text-tinta shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
->
+<dialog #pedidoDialog aria-labelledby="titulo-nuevo-pedido"
+  class="m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[720px] overflow-y-auto rounded-2xl border border-linea bg-superficie p-0 text-tinta shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm">
   <div class="flex items-center justify-between gap-4 border-b border-linea px-7 py-5">
     <div>
-      <p class="mb-2 text-[8px] tracking-[1.4px] text-muted">
-        LIRIOSEDA · PEDIDOS
-      </p>
-
-      <h2 id="titulo-nuevo-pedido" class="text-xl font-semibold">
-        Registrar pedido
-      </h2>
+      <p class="mb-2 text-[8px] tracking-[1.4px] text-muted">LIRIOSEDA · PEDIDOS</p>
+      <h2 id="titulo-nuevo-pedido" class="text-xl font-semibold">{{ editandoPedido ? 'Editar pedido' : 'Registrar pedido' }}</h2>
     </div>
-
-    <button
-      type="button"
-      (click)="pedidoDialog.close()"
-      aria-label="Cerrar ventana"
-      class="flex size-8 shrink-0 items-center justify-center rounded-lg text-xl text-muted hover:bg-marca-suave hover:text-marca"
-    >
-      ×
-    </button>
+    <button type="button" (click)="pedidoDialog.close()" aria-label="Cerrar ventana"
+      class="flex size-8 shrink-0 items-center justify-center rounded-lg text-xl text-muted hover:bg-marca-suave hover:text-marca">×</button>
   </div>
 
-  <form
-    #datosPedido
-    class="px-7 py-6"
-    (submit)="$event.preventDefault()"
-  >
+  <form id="datosPedido" #datosPedido class="px-7 py-6"
+    (submit)="registrarPedido($event, pedidoDialog, datosPedido)">
     <p class="mb-5 text-xs leading-relaxed text-muted">
-      Selecciona un proveedor y las prendas que deseas solicitar.
-      Los precios de compra se ingresan por línea.
+      El backend requiere un código, fecha, estado, usuario/sede y al menos una línea.
     </p>
-
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <label class="flex flex-col gap-2 text-[11px] text-muted">
-        Fecha *
-
-        <input
-          type="date"
-          name="fecha"
-          required
-          class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-        >
+        Código del pedido *
+        <input type="text" name="idPedido" [(ngModel)]="cabecera.idPedido" [ngModelOptions]="{ standalone: true }"
+          maxlength="10" required placeholder="Ej. PD0004" [readonly]="!!editandoPedido"
+          class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
       </label>
-
       <label class="flex flex-col gap-2 text-[11px] text-muted">
-        Responsable
-
-        <input
-          type="text"
-          name="responsable"
-          readonly
-          placeholder="Tuki"
-          class="rounded-lg border border-linea bg-fondo px-3 py-2.5 text-xs text-muted"
-        >
+        Fecha *
+        <input type="date" name="fechaPedido" [(ngModel)]="cabecera.fechaPedido" [ngModelOptions]="{ standalone: true }" required
+          class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
       </label>
-
       <label class="flex flex-col gap-2 text-[11px] text-muted sm:col-span-2">
-        Proveedor *
-
-        <select
-          name="proveedor"
-          required
-          class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-        >
-          <option value="">Seleccionar proveedor</option>
+        Estado *
+        <select name="idEstado" [(ngModel)]="cabecera.idEstado" [ngModelOptions]="{ standalone: true }" required
+          class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
+          <option value="">Seleccionar estado</option>
+          @for (estado of estados; track estado.idEstado) {
+            <option [value]="estado.idEstado">{{ estado.descripcion }}</option>
+          }
         </select>
-
-        
       </label>
     </div>
 
     <div class="mb-3 mt-6 flex items-center justify-between gap-3">
       <h3 class="text-xs font-semibold">Detalle del pedido</h3>
-
-      <button
-        type="button"
-        (click)="agregarLinea()"
-        class="text-[11px] font-semibold text-marca"
-      >
-        + Añadir producto
-      </button>
+      <button type="button" (click)="agregarLinea()" class="text-[11px] font-semibold text-marca">+ Añadir producto</button>
     </div>
-
     <div class="flex flex-col gap-3">
       @for (linea of lineas; track linea) {
-        <div class="grid grid-cols-2 items-end gap-3 rounded-lg border border-linea bg-fondo p-3 sm:grid-cols-[minmax(0,1fr)_80px_100px_32px]">
-          <label class="col-span-2 flex flex-col gap-2 text-[10px] text-muted sm:col-span-1">
+        <div class="grid grid-cols-[minmax(0,1fr)_80px_32px] items-end gap-3 rounded-lg border border-linea bg-fondo p-3">
+          <label class="flex min-w-0 flex-col gap-2 text-[10px] text-muted">
             Producto *
-
-            <select
-              [name]="'producto-' + linea"
-              required
-              class="min-w-0 rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-            >
+            <select [name]="'producto-' + linea" [(ngModel)]="detalleFormulario[linea].idProducto"
+              [ngModelOptions]="{ standalone: true }" required
+              class="min-w-0 rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
               <option value="">Seleccionar producto</option>
+              @for (producto of productos; track producto.idproducto) {
+                <option [value]="producto.idproducto">{{ producto.nombre }} ({{ producto.idproducto }})</option>
+              }
             </select>
           </label>
-
           <label class="flex flex-col gap-2 text-[10px] text-muted">
             Cantidad *
-
-            <input
-              type="number"
-              [name]="'cantidad-' + linea"
-              value="1"
-              min="1"
-              step="1"
-              required
-              class="w-full rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-            >
+            <input type="number" [name]="'cantidad-' + linea" [(ngModel)]="detalleFormulario[linea].cantidad"
+              [ngModelOptions]="{ standalone: true }" min="1" step="1" required
+              class="w-full rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
           </label>
-
-          <label class="flex flex-col gap-2 text-[10px] text-muted">
-            Precio (S/) *
-
-            <input
-              type="number"
-              [name]="'precio-' + linea"
-              min="0.01"
-              step="0.01"
-              placeholder="0.00"
-              required
-              class="w-full rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-            >
-          </label>
-
-          <button
-            type="button"
-            (click)="quitarLinea(linea)"
-            [disabled]="lineas.length === 1"
+          <button type="button" (click)="quitarLinea(linea)" [disabled]="lineas.length === 1"
             [attr.aria-label]="'Quitar línea ' + linea"
-            class="flex size-8 items-center justify-center rounded-lg text-lg text-muted hover:bg-marca-suave disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            ×
-          </button>
+            class="flex size-8 items-center justify-center rounded-lg text-lg text-muted hover:bg-marca-suave disabled:cursor-not-allowed disabled:opacity-40">×</button>
         </div>
       }
     </div>
-
-    <div class="mt-5 flex items-center justify-between text-xs">
-      <span class="text-muted">Importe total</span>
-      <strong class="text-lg text-marca">S/ 0.00</strong>
-    </div>
+    @if (errorGuardado()) {
+      <p role="alert" class="mt-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">{{ errorGuardado() }}</p>
+    }
   </form>
 
   <div class="flex justify-end gap-3 border-t border-linea bg-[#fafcf7] px-7 py-4">
-    <button
-      type="button"
-      (click)="pedidoDialog.close()"
-      class="rounded-lg border border-linea px-4 py-2.5 text-xs hover:bg-marca-suave"
-    >
-      Cancelar
-    </button>
-
-    <button
-      type="button"
-      disabled
-      title="El guardado se conectará al final"
-      class="cursor-not-allowed rounded-lg bg-marca px-4 py-2.5 text-xs font-semibold text-white opacity-50"
-    >
-      Registrar pedido
+    <button type="button" (click)="pedidoDialog.close()"
+      class="rounded-lg border border-linea px-4 py-2.5 text-xs hover:bg-marca-suave">Cancelar</button>
+    <button type="submit" form="datosPedido" [disabled]="guardando()"
+      class="rounded-lg bg-marca px-4 py-2.5 text-xs font-semibold text-white hover:bg-marca-oscura disabled:opacity-50">
+      {{ guardando() ? 'Guardando…' : editandoPedido ? 'Guardar cambios' : 'Registrar pedido' }}
     </button>
   </div>
 </dialog>

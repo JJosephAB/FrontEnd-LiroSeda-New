@@ -1,142 +1,146 @@
 <section class="mb-7 flex flex-wrap items-center justify-between gap-4">
   <div>
     <p class="mb-2 text-[9px] tracking-[1.4px] text-muted">TU BOUTIQUE, EN ORDEN</p>
-    <h1 class="font-heading text-[28px] font-bold tracking-tight">Un inventario más preciso.</h1>
+    <h1 class="font-heading text-[28px] font-bold tracking-tight">Cada ingreso, bajo control.</h1>
     <p class="mt-2 text-xs text-muted">
-      Registra los retiros de inventario y su motivo.
+      Registra compras y actualiza las existencias por sede.
       @if (usuarioActual) { Solo se muestran registros de tu sede (#{{ usuarioActual.idSede }}). }
     </p>
   </div>
-  <button type="button" (click)="abrirBaja(bajaDialog)"
+  <button type="button" (click)="abrirEntrada(entradaDialog)"
     class="rounded-lg bg-marca px-4 py-3 text-xs font-semibold text-white hover:bg-marca-oscura">
-    + Registrar salida
+    + Registrar entrada
   </button>
 </section>
 
-<section class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3" aria-label="Indicadores de salidas">
+<section class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3" aria-label="Indicadores de entradas">
   <article class="rounded-xl border border-linea bg-superficie p-5">
-    <p class="text-[11px] text-muted">Salidas registradas</p>
-    <strong class="mt-1 block text-xl">{{ salidas.length }}</strong>
+    <p class="text-[11px] text-muted">Entradas registradas</p>
+    <strong class="mt-1 block text-xl">{{ entradas.length }}</strong>
   </article>
   <article class="rounded-xl border border-linea bg-superficie p-5">
-    <p class="text-[11px] text-muted">Unidades retiradas</p>
-    <strong class="mt-1 block text-xl">{{ unidadesRetiradas }}</strong>
+    <p class="text-[11px] text-muted">Proveedores disponibles</p>
+    <strong class="mt-1 block text-xl">{{ proveedores.length }}</strong>
   </article>
   <article class="rounded-xl border border-linea bg-superficie p-5">
-    <p class="text-[11px] text-muted">Motivos disponibles</p>
-    <strong class="mt-1 block text-xl">{{ motivos.length }}</strong>
+    <p class="text-[11px] text-muted">Importe registrado</p>
+    <strong class="mt-1 block text-xl">{{ importeAcumulado | currency:'PEN':'S/ ':'1.2-2' }}</strong>
   </article>
 </section>
 
 <div class="mb-5 rounded-lg border border-linea bg-marca-suave px-4 py-3 text-[11px] leading-relaxed text-marca">
-  <strong>Control de existencias.</strong>
-  La creación de una salida descuenta stock; eliminarla lo devuelve.
+  <strong>Recepción de productos.</strong>
+  Una entrada admite varios productos; el backend actualiza el stock de la sede registrada.
 </div>
 
 @if (errorCarga()) {
   <p role="alert" class="mb-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">{{ errorCarga() }}</p>
 }
 
-<section class="overflow-hidden rounded-2xl border border-linea bg-superficie" aria-label="Listado de salidas">
+<section class="overflow-hidden rounded-2xl border border-linea bg-superficie" aria-label="Listado de entradas">
   <div class="flex items-center gap-3 px-6 py-5">
-    <h2 class="text-sm font-bold">Salidas de inventario</h2>
-    <span class="rounded-md bg-marca-suave px-2 py-1 text-[10px] text-marca">{{ salidasFiltradas.length }}</span>
+    <h2 class="text-sm font-bold">Entradas</h2>
+    <span class="rounded-md bg-marca-suave px-2 py-1 text-[10px] text-marca">{{ entradasFiltradas.length }}</span>
   </div>
   <div class="px-6 pb-5">
-    <label for="busqueda-bajas" class="mb-1.5 block text-[10px] text-muted">Buscar salida</label>
-    <input id="busqueda-bajas" type="search" [(ngModel)]="busqueda"
-      placeholder="Buscar por código, usuario o motivo…"
+    <label for="busqueda-entradas" class="mb-1.5 block text-[10px] text-muted">Buscar entrada</label>
+    <input id="busqueda-entradas" type="search" [(ngModel)]="busqueda"
+      placeholder="Buscar por código, proveedor o usuario…"
       class="w-full max-w-md rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca">
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full min-w-[850px] text-left text-xs">
+    <table class="w-full min-w-[900px] text-left text-xs">
       <thead class="border-y border-linea bg-[#fafcf9] text-muted">
         <tr>
-          <th class="px-6 py-3 font-medium">Salida</th>
+          <th class="px-6 py-3 font-medium">Entrada</th>
           <th class="px-4 py-3 font-medium">Fecha</th>
-          <th class="px-4 py-3 font-medium">Motivo</th>
-          <th class="px-4 py-3 font-medium">Unidades</th>
+          <th class="px-4 py-3 font-medium">Proveedor</th>
+          <th class="px-4 py-3 font-medium">Importe</th>
           <th class="px-4 py-3 font-medium">Usuario</th>
           <th class="px-4 py-3 font-medium">Detalle</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (salida of salidasFiltradas; track salida.idSalida) {
+        @for (entrada of entradasFiltradas; track entrada.idEntrada) {
           <tr class="border-b border-linea hover:bg-[#fafcf8]">
-            <td class="px-6 py-4 font-semibold">{{ salida.idSalida }}</td>
-            <td class="px-4 py-4 text-muted">{{ salida.fechaSalida }}</td>
-            <td class="px-4 py-4">{{ nombreMotivo(salida.idMotivo) }}</td>
-            <td class="px-4 py-4">{{ unidadesSalida(salida) }}</td>
-            <td class="px-4 py-4">#{{ salida.idUsuario }}</td>
+            <td class="px-6 py-4 font-semibold">{{ entrada.idEntrada }}</td>
+            <td class="px-4 py-4 text-muted">{{ entrada.fechaEntrada }}</td>
+            <td class="px-4 py-4">{{ nombreProveedor(entrada.idProveedor) }}</td>
+            <td class="px-4 py-4 font-semibold">{{ importeEntrada(entrada) | currency:'PEN':'S/ ':'1.2-2' }}</td>
+            <td class="px-4 py-4">#{{ entrada.idUsuario }}</td>
             <td class="px-4 py-4 text-muted">
-              @for (detalle of salida.detalles; track detalle.idDetalleSalida ?? detalle.idProducto) {
+              @for (detalle of entrada.detalles; track detalle.idDetalleEntrada ?? detalle.idProducto) {
                 <span class="block">{{ nombreProducto(detalle.idProducto) }} × {{ detalle.cantidad }}</span>
               }
             </td>
             <td class="px-4 py-4">
-              <button type="button" (click)="editarSalida(salida, bajaDialog)"
+              <button type="button" (click)="editarEntrada(entrada, entradaDialog)"
                 class="rounded-lg border border-linea px-3 py-2 text-[10px] font-semibold text-marca hover:bg-marca-suave">
                 Editar
               </button>
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="7" class="px-6 py-10 text-center text-muted">No hay salidas para mostrar.</td></tr>
+          <tr><td colspan="7" class="px-6 py-10 text-center text-muted">No hay entradas para mostrar.</td></tr>
         }
       </tbody>
     </table>
   </div>
-  <div class="px-6 py-4 text-[11px] text-muted">Mostrando {{ salidasFiltradas.length }} de {{ salidas.length }} salidas</div>
+  <div class="px-6 py-4 text-[11px] text-muted">
+    Mostrando {{ entradasFiltradas.length }} de {{ entradas.length }} entradas
+  </div>
 </section>
 
-<dialog #bajaDialog aria-labelledby="titulo-nueva-baja"
-  class="m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[720px] overflow-y-auto rounded-2xl border border-linea bg-superficie p-0 text-tinta shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm">
+<dialog #entradaDialog aria-labelledby="titulo-entrada"
+  class="m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[760px] overflow-y-auto rounded-2xl border border-linea bg-superficie p-0 text-tinta shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm">
   <div class="flex items-center justify-between gap-4 border-b border-linea px-7 py-5">
     <div>
       <p class="mb-2 text-[8px] tracking-[1.4px] text-muted">LIRIOSEDA · INVENTARIO</p>
-      <h2 id="titulo-nueva-baja" class="text-xl font-semibold">{{ editandoSalida ? 'Editar salida de inventario' : 'Registrar salida de inventario' }}</h2>
+      <h2 id="titulo-entrada" class="text-xl font-semibold">{{ editandoEntrada ? 'Editar entrada' : 'Registrar entrada' }}</h2>
     </div>
-    <button type="button" (click)="bajaDialog.close()" aria-label="Cerrar ventana"
+    <button type="button" (click)="entradaDialog.close()" aria-label="Cerrar ventana"
       class="flex size-8 shrink-0 items-center justify-center rounded-lg text-xl text-muted hover:bg-marca-suave hover:text-marca">×</button>
   </div>
 
-  <form id="datosBaja" #datosBaja class="px-7 py-6"
-    (submit)="registrarBaja($event, bajaDialog, datosBaja)">
+  <form id="datosEntrada" #datosEntrada class="px-7 py-6"
+    (submit)="guardarEntrada($event, entradaDialog, datosEntrada)">
     <p class="mb-5 text-xs leading-relaxed text-muted">
-      La API requiere código, fecha, sede, usuario, motivo y detalles.
+      La API requiere código, fecha, proveedor, usuario/sede y al menos un producto.
     </p>
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <label class="flex flex-col gap-2 text-[11px] text-muted">
-        Código de salida *
-        <input type="text" name="idSalida" [(ngModel)]="cabecera.idSalida" [ngModelOptions]="{ standalone: true }"
-          maxlength="10" required placeholder="Ej. S00004" [readonly]="!!editandoSalida"
+        Código de entrada *
+        <input type="text" name="idEntrada" [(ngModel)]="cabecera.idEntrada" [ngModelOptions]="{ standalone: true }"
+          maxlength="10" required placeholder="Ej. E00005" [readonly]="!!editandoEntrada"
           class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
       </label>
       <label class="flex flex-col gap-2 text-[11px] text-muted">
         Fecha *
-        <input type="date" name="fechaSalida" [(ngModel)]="cabecera.fechaSalida" [ngModelOptions]="{ standalone: true }" required
+        <input type="date" name="fechaEntrada" [(ngModel)]="cabecera.fechaEntrada"
+          [ngModelOptions]="{ standalone: true }" required
           class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
       </label>
       <label class="flex flex-col gap-2 text-[11px] text-muted sm:col-span-2">
-        Motivo *
-        <select name="idMotivo" [(ngModel)]="cabecera.idMotivo" [ngModelOptions]="{ standalone: true }" required
+        Proveedor *
+        <select name="idProveedor" [(ngModel)]="cabecera.idProveedor"
+          [ngModelOptions]="{ standalone: true }" required
           class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
-          <option value="">Seleccionar motivo</option>
-          @for (motivo of motivos; track motivo.idMotivo) {
-            <option [value]="motivo.idMotivo">{{ motivo.descripcion }}</option>
+          <option value="">Seleccionar proveedor</option>
+          @for (proveedor of proveedores; track proveedor.idProveedor) {
+            <option [value]="proveedor.idProveedor">{{ proveedor.nombre }}</option>
           }
         </select>
       </label>
     </div>
 
     <div class="mb-3 mt-6 flex items-center justify-between gap-3">
-      <h3 class="text-xs font-semibold">Detalle de la salida</h3>
+      <h3 class="text-xs font-semibold">Detalle de la entrada</h3>
       <button type="button" (click)="agregarLinea()" class="text-[11px] font-semibold text-marca">+ Añadir producto</button>
     </div>
     <div class="flex flex-col gap-3">
       @for (linea of lineas; track linea) {
-        <div class="grid grid-cols-[minmax(0,1fr)_80px_32px] items-end gap-3 rounded-lg border border-linea bg-fondo p-3">
+        <div class="grid grid-cols-[minmax(0,1fr)_75px_110px_32px] items-end gap-3 rounded-lg border border-linea bg-fondo p-3">
           <label class="flex min-w-0 flex-col gap-2 text-[10px] text-muted">
             Producto *
             <select [name]="'producto-' + linea" [(ngModel)]="detalleFormulario[linea].idProducto"
@@ -144,7 +148,7 @@
               class="min-w-0 rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
               <option value="">Seleccionar producto</option>
               @for (producto of productos; track producto.idproducto) {
-                <option [value]="producto.idproducto">{{ producto.nombre }} ({{ producto.stock }} disponibles)</option>
+                <option [value]="producto.idproducto">{{ producto.nombre }}</option>
               }
             </select>
           </label>
@@ -154,6 +158,12 @@
               [ngModelOptions]="{ standalone: true }" min="1" step="1" required
               class="w-full rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
           </label>
+          <label class="flex flex-col gap-2 text-[10px] text-muted">
+            Precio unitario *
+            <input type="number" [name]="'precio-' + linea" [(ngModel)]="detalleFormulario[linea].precioUnitario"
+              [ngModelOptions]="{ standalone: true }" min="0" step="0.01" required
+              class="w-full rounded-lg border border-linea bg-superficie px-2 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
+          </label>
           <button type="button" (click)="quitarLinea(linea)" [disabled]="lineas.length === 1"
             [attr.aria-label]="'Quitar línea ' + linea"
             class="flex size-8 items-center justify-center rounded-lg text-lg text-muted hover:bg-marca-suave disabled:cursor-not-allowed disabled:opacity-40">×</button>
@@ -161,8 +171,8 @@
       }
     </div>
     <div class="mt-5 flex items-center justify-between text-xs">
-      <span class="text-muted">Unidades a retirar</span>
-      <strong class="text-lg text-marca">{{ unidadesFormulario }} uds.</strong>
+      <span class="text-muted">Importe de la entrada</span>
+      <strong class="text-lg text-marca">{{ importeFormulario | currency:'PEN':'S/ ':'1.2-2' }}</strong>
     </div>
     @if (errorGuardado()) {
       <p role="alert" class="mt-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">{{ errorGuardado() }}</p>
@@ -170,11 +180,11 @@
   </form>
 
   <div class="flex justify-end gap-3 border-t border-linea bg-[#fafcf7] px-7 py-4">
-    <button type="button" (click)="bajaDialog.close()"
+    <button type="button" (click)="entradaDialog.close()"
       class="rounded-lg border border-linea px-4 py-2.5 text-xs hover:bg-marca-suave">Cancelar</button>
-    <button type="submit" form="datosBaja" [disabled]="guardando()"
+    <button type="submit" form="datosEntrada" [disabled]="guardando()"
       class="rounded-lg bg-marca px-4 py-2.5 text-xs font-semibold text-white hover:bg-marca-oscura disabled:opacity-50">
-      {{ guardando() ? 'Guardando…' : editandoSalida ? 'Guardar cambios' : 'Confirmar salida' }}
+      {{ guardando() ? 'Guardando…' : editandoEntrada ? 'Guardar cambios' : 'Registrar entrada' }}
     </button>
   </div>
 </dialog>

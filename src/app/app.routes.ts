@@ -5,6 +5,7 @@ import { Productos } from './pages/productos/productos';
 import { Proveedores } from './pages/proveedores/proveedores';
 import { Pedidos } from './pages/pedidos/pedidos';
 import { Bajas } from './pages/bajas/bajas';
+import { Entradas } from './pages/entradas/entradas';
 import { Login } from './pages/login/login';
 import { authGuard } from './guards/auth.guard';
 
@@ -50,7 +51,11 @@ export const routes: Routes = [
         component: Bajas,
         title: 'Bajas de inventario · LirioSeda',
       },
-      
+      {
+        path: 'entradas',
+        component: Entradas,
+        title: 'Entradas de inventario · LirioSeda',
+      },
     ],
   },
   {

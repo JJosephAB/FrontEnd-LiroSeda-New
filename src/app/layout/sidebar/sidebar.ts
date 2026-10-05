@@ -30,6 +30,11 @@ export class Sidebar {
       route: '/pedidos',
     },
     {
+      label: 'Entradas',
+      icon: 'assets/icons/inventario.svg',
+      route: '/entradas',
+    },
+    {
       label: 'Bajas de inventario',
       icon: 'assets/icons/inventario.svg',
       route: '/bajas',

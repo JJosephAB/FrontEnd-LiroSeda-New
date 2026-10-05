@@ -74,6 +74,27 @@
   </article>
 </section>
 
+<div class="mb-5 flex flex-wrap items-end gap-3 rounded-xl border border-linea bg-superficie p-4">
+  <label for="sede-stock-productos" class="flex min-w-[220px] flex-1 flex-col gap-2 text-[10px] text-muted">
+    Sede del inventario
+    <select
+      id="sede-stock-productos"
+      [ngModel]="sedeSeleccionada"
+      (ngModelChange)="cambiarSede($event)"
+      class="rounded-lg border border-linea bg-fondo px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
+    >
+      @for (sede of sedes; track sede.idSede) {
+        <option [value]="sede.idSede">{{ sede.descripcion }}</option>
+      }
+    </select>
+  </label>
+  @if (usuarioActual) {
+    <span class="text-[10px] text-muted">
+      Sede asignada a tu cuenta: {{ usuarioActual.idSede }}
+    </span>
+  }
+</div>
+
 <!-- Listado -->
 <section
   class="overflow-hidden rounded-2xl border border-linea bg-superficie"
@@ -109,42 +130,21 @@
 
   <div>
     <label
-      for="marca-productos"
+      for="modelo-productos"
       class="mb-1.5 block text-[10px] text-muted"
     >
-      Marca
+      Modelo
     </label>
 
     <select
-      id="marca-productos"
-      [(ngModel)]="marcaSeleccionada"
+      id="modelo-productos"
+      [(ngModel)]="modeloSeleccionado"
       class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca"
     >
-      <option value="">Todas las marcas</option>
+      <option value="">Todos los modelos</option>
 
-      @for (marca of marcas; track marca) {
-        <option [value]="marca">{{ marca }}</option>
-      }
-    </select>
-  </div>
-
-  <div>
-    <label
-      for="lote-productos"
-      class="mb-1.5 block text-[10px] text-muted"
-    >
-      Lote
-    </label>
-
-    <select
-      id="lote-productos"
-      [(ngModel)]="loteSeleccionado"
-      class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs focus:outline-2 focus:outline-marca"
-    >
-      <option value="">Todos los lotes</option>
-
-      @for (lote of lotes; track lote) {
-        <option [value]="lote">{{ lote }}</option>
+      @for (modelo of modelosDisponibles; track modelo) {
+        <option [value]="modelo">{{ modelo }}</option>
       }
     </select>
   </div>
@@ -177,22 +177,27 @@
     Limpiar
   </button>
 </div>
+@if (errorCarga()) {
+  <p role="alert" class="mx-6 mb-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">
+    {{ errorCarga() }}
+  </p>
+}
   <div class="overflow-x-auto">
     
     <table class="w-full min-w-[850px] text-left text-xs">
       <thead class="border-y border-linea bg-[#fafcf9] text-muted">
         <tr>
           <th scope="col" class="px-6 py-3 font-medium">Producto</th>
-          <th scope="col" class="px-4 py-3 font-medium">Lote</th>
-          <th scope="col" class="px-4 py-3 font-medium">Proveedor</th>
+          <th scope="col" class="px-4 py-3 font-medium">Modelo</th>
           <th scope="col" class="px-4 py-3 font-medium">Stock</th>
           <th scope="col" class="px-4 py-3 font-medium">Precio</th>
           <th scope="col" class="px-4 py-3 font-medium">Estado</th>
+          <th scope="col" class="px-4 py-3 font-medium">Acciones</th>
         </tr>
       </thead>
 
       <tbody>
-        @for (producto of productosFiltrados; track producto.id) {
+        @for (producto of productosFiltrados; track producto.idproducto) {
           <tr class="border-b border-linea hover:bg-[#fafcf8]">
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
@@ -210,18 +215,14 @@
                   </strong>
 
                   <small class="mt-1 block text-[10px] text-muted">
-                    {{ producto.marca }} · {{ producto.id }}
+                    {{ producto.idproducto }}
                   </small>
                 </div>
               </div>
             </td>
 
             <td class="px-4 py-4 text-muted">
-              {{ producto.lote }}
-            </td>
-
-            <td class="px-4 py-4 text-muted">
-              {{ producto.proveedor }}
+              {{ producto.modelo }}
             </td>
 
             <td class="whitespace-nowrap px-4 py-4">
@@ -248,6 +249,12 @@
                 </span>
               }
             </td>
+            <td class="px-4 py-4">
+              <button type="button" (click)="editarProducto(producto, productoDialog)"
+                class="rounded-lg border border-linea px-3 py-2 text-[10px] font-semibold text-marca hover:bg-marca-suave">
+                Editar
+              </button>
+            </td>
           </tr>
         } @empty {
           <tr>
@@ -262,7 +269,7 @@
 
   <div class="px-6 py-4 text-[11px] text-muted">
   Mostrando {{ productosFiltrados.length }} de {{ productos.length }}
-  productos · Datos de prueba
+  productos · Stock de la sede seleccionada
 </div>
 </section>
 
@@ -281,7 +288,7 @@
       </p>
 
       <h2 id="titulo-nuevo-producto" class="text-xl font-semibold">
-        Una nueva prenda en tu colección
+        {{ editandoProductoId ? 'Editar producto' : 'Una nueva prenda en tu colección' }}
       </h2>
     </div>
 
@@ -296,169 +303,75 @@
   </div>
 
   
-<!-- Contenido -->
-<div class="px-7 py-6" [formGroup]="productoForm">
+<form class="px-7 py-6" [formGroup]="productoForm" (ngSubmit)="guardarProducto(productoDialog)">
   <p class="mb-5 text-xs leading-relaxed text-muted">
-    Completa la información de la prenda.
-    Los campos con * son obligatorios.
+    Completa los datos de Producto y el stock inicial para una sede.
   </p>
 
   <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-    <!-- Nombre -->
-    <label class="flex flex-col gap-2 text-[11px] text-muted sm:col-span-2">
-      Nombre del producto *
-
-      <input
-        type="text"
-        formControlName="nombre"
-        maxlength="120"
-        placeholder="Ej. Blusa de lino"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-      >
-
-      @if (
-        productoForm.controls.nombre.touched &&
-        productoForm.controls.nombre.invalid
-      ) {
-        <span class="text-[10px] text-[#b7666e]">
-          Ingresa un nombre válido de hasta 120 caracteres.
-        </span>
-      }
-    </label>
-
-    <!-- Marca -->
     <label class="flex flex-col gap-2 text-[11px] text-muted">
-      Marca *
-
-      <select
-        formControlName="marca"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-      >
-        <option value="">Seleccionar marca</option>
-
-        @for (marca of marcas; track marca) {
-          <option [value]="marca">{{ marca }}</option>
-        }
-      </select>
-
-      @if (
-        productoForm.controls.marca.touched &&
-        productoForm.controls.marca.invalid
-      ) {
-        <span class="text-[10px] text-[#b7666e]">
-          Selecciona una marca.
-        </span>
-      }
+      Código de producto *
+      <input formControlName="idproducto" maxlength="10" placeholder="Ej. PR13" [readonly]="!!editandoProductoId"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
     </label>
 
-    <!-- Lote -->
     <label class="flex flex-col gap-2 text-[11px] text-muted">
-      Lote *
-
-      <select
-        formControlName="lote"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-      >
-        <option value="">Seleccionar lote</option>
-
-        @for (lote of lotes; track lote) {
-          <option [value]="lote">{{ lote }}</option>
-        }
-      </select>
-
-      @if (
-        productoForm.controls.lote.touched &&
-        productoForm.controls.lote.invalid
-      ) {
-        <span class="text-[10px] text-[#b7666e]">
-          Selecciona un lote.
-        </span>
-      }
+      Nombre *
+      <input formControlName="nombre" maxlength="150" placeholder="Nombre del producto"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
     </label>
 
-    <!-- Proveedor -->
-    <label class="flex flex-col gap-2 text-[11px] text-muted sm:col-span-2">
-      Proveedor *
-
-      <select
-        formControlName="proveedor"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-      >
-        <option value="">Seleccionar proveedor</option>
-
-        @for (proveedor of proveedores; track proveedor) {
-          <option [value]="proveedor">{{ proveedor }}</option>
+    <label class="flex flex-col gap-2 text-[11px] text-muted">
+      Modelo *
+      <select formControlName="modeloId"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
+        <option [ngValue]="0">Seleccionar modelo</option>
+        @for (modelo of modelos; track modelo.idModelo) {
+          <option [ngValue]="modelo.idModelo">{{ modelo.descripcion }}</option>
         }
       </select>
-
-      @if (
-        productoForm.controls.proveedor.touched &&
-        productoForm.controls.proveedor.invalid
-      ) {
-        <span class="text-[10px] text-[#b7666e]">
-          Selecciona un proveedor.
-        </span>
-      }
     </label>
 
-    <!-- Stock -->
+    <label class="flex flex-col gap-2 text-[11px] text-muted">
+      Precio (S/) *
+      <input type="number" formControlName="precio" min="0" step="0.01"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
+    </label>
+
+    <label class="flex flex-col gap-2 text-[11px] text-muted">
+      {{ editandoProductoId ? 'Sede del stock' : 'Sede del stock inicial' }} *
+      <select formControlName="sedeId"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
+        <option [ngValue]="0">Seleccionar sede</option>
+        @for (sede of sedes; track sede.idSede) {
+          <option [ngValue]="sede.idSede">{{ sede.descripcion }}</option>
+        }
+      </select>
+    </label>
+
     <label class="flex flex-col gap-2 text-[11px] text-muted">
       Stock inicial *
-
-      <input
-        type="number"
-        formControlName="stock"
-        min="0"
-        max="2147483647"
-        step="1"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-      >
-
-      @if (
-        productoForm.controls.stock.touched &&
-        productoForm.controls.stock.invalid
-      ) {
-        <span class="text-[10px] text-[#b7666e]">
-          Ingresa un entero entre 0 y 2147483647.
-        </span>
-      }
-    </label>
-
-    <!-- Precio -->
-    <label class="flex flex-col gap-2 text-[11px] text-muted">
-      Precio de venta (S/) *
-
-      <input
-        type="number"
-        formControlName="precio"
-        min="0"
-        max="99999999.99"
-        step="0.01"
-        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-      >
-
-      @if (
-        productoForm.controls.precio.touched &&
-        productoForm.controls.precio.invalid
-      ) {
-        <span class="text-[10px] text-[#b7666e]">
-          Ingresa un precio entre 0 y 99999999.99, con hasta dos decimales.
-        </span>
-      }
+      <input type="number" formControlName="stock" min="0" step="1"
+        class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
     </label>
   </div>
-</div>
 
-  <!-- Pie -->
-  <div
-    class="flex justify-end gap-3 border-t border-linea bg-[#fafcf7] px-7 py-4"
-  >
-    <button
-      type="button"
-      (click)="productoDialog.close()"
-      class="rounded-lg border border-linea px-4 py-2.5 text-xs hover:bg-marca-suave"
-    >
+  @if (errorGuardado()) {
+    <p role="alert" class="mt-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">
+      {{ errorGuardado() }}
+    </p>
+  }
+
+  <div class="mt-6 flex justify-end gap-3 border-t border-linea pt-4">
+    <button type="button" (click)="productoDialog.close()"
+      class="rounded-lg border border-linea px-4 py-2.5 text-xs hover:bg-marca-suave">
       Cancelar
     </button>
+    <button type="submit" [disabled]="guardando()"
+      class="rounded-lg bg-marca px-4 py-2.5 text-xs font-semibold text-white hover:bg-marca-oscura disabled:opacity-50">
+      {{ guardando() ? 'Guardando…' : editandoProductoId ? 'Guardar cambios' : 'Guardar producto' }}
+    </button>
   </div>
+</form>
+
 </dialog>

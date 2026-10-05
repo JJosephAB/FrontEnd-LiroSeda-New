@@ -12,6 +12,24 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Backend API
+
+The frontend calls the Spring Boot API at `http://localhost:8080/api` by default.
+Set `window.LIRIO_API_BASE_URL` in `public/runtime-config.js` to the deployed API
+base URL (including `/api`) before serving the generated frontend.
+The login screen uses `POST /auth/login` with `{ "correo": "...", "clave": "..." }`.
+The returned JWT is kept in session storage and sent as a Bearer token on
+subsequent requests. Products, suppliers, orders, inventory entries, and inventory exits use
+`/productos`, `/productos-sedes`, `/modelos`, `/sedes`, `/proveedores`,
+`/pedidos`, `/estados`, `/entradas`, `/salidas`, and `/motivos`.
+
+Order, entry, and exit screens obtain the authenticated user's ID and assigned
+site from `GET /usuarios/me`, then use that site's stock. Products, orders,
+entries, and exits support editing; entries, orders, and exits allow multiple
+detail lines in the same operation. The backend must allow the frontend's
+origin through its CORS configuration; the provided backend defaults to
+`http://localhost:4200`.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

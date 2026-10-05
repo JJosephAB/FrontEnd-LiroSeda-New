@@ -1,15 +1,96 @@
 import { TestBed } from '@angular/core/testing';
 import { ProductosService } from './productos.service';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 
 describe('ProductosService', () => {
   let service: ProductosService;
+  let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(ProductosService);
+    http = TestBed.inject(HttpTestingController);
   });
+
+  afterEach(() => http.verify());
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('combines products with model names and stock across sites', () => {
+    let result: unknown;
+    service.listar().subscribe(products => result = products);
+
+    http.expectOne('http://localhost:8080/api/productos').flush([
+      {
+        idProducto: 'PR01',
+        nombre: 'Polera Deportiva Hombre',
+        precio: 89.9,
+        estado: '1',
+        idModelo: 1,
+      },
+    ]);
+    http.expectOne('http://localhost:8080/api/modelos').flush([
+      { idModelo: 1, descripcion: 'Polera Deportiva' },
+    ]);
+    http.expectOne('http://localhost:8080/api/productos-sedes').flush([
+      { stock: 100, idSede: 1, idProducto: 'PR01' },
+      { stock: 30, idSede: 2, idProducto: 'PR01' },
+    ]);
+
+    expect(result).toEqual([
+      {
+        idproducto: 'PR01',
+        nombre: 'Polera Deportiva Hombre',
+        modelo: 'Polera Deportiva',
+        modeloId: 1,
+        estado: '1',
+        stock: 130,
+        tieneRegistroSede: true,
+        precio: 89.9,
+      },
+    ]);
+  });
+
+  it('limits calculated stock to the selected site', () => {
+    let result: unknown;
+    service.listar(2).subscribe(products => result = products);
+
+    http.expectOne('http://localhost:8080/api/productos').flush([
+      {
+        idProducto: 'PR01',
+        nombre: 'Polera Deportiva Hombre',
+        precio: 89.9,
+        estado: '1',
+        idModelo: 1,
+      },
+    ]);
+    http.expectOne('http://localhost:8080/api/modelos').flush([
+      { idModelo: 1, descripcion: 'Polera Deportiva' },
+    ]);
+    http.expectOne('http://localhost:8080/api/productos-sedes').flush([
+      { stock: 100, idSede: 1, idProducto: 'PR01' },
+      { stock: 30, idSede: 2, idProducto: 'PR01' },
+    ]);
+
+    expect(result).toEqual([
+      {
+        idproducto: 'PR01',
+        nombre: 'Polera Deportiva Hombre',
+        modelo: 'Polera Deportiva',
+        modeloId: 1,
+        estado: '1',
+        stock: 30,
+        tieneRegistroSede: true,
+        precio: 89.9,
+      },
+    ]);
   });
 });

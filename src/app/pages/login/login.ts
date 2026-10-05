@@ -14,6 +14,7 @@ export class Login {
 
   readonly mostrarClave = signal(false);
   readonly errorLogin = signal('');
+  readonly enviando = signal(false);
 
   alternarClave(): void {
     this.mostrarClave.update(valor => !valor);
@@ -21,19 +22,23 @@ export class Login {
 
   acceder(usuario: string, clave: string): void {
     this.errorLogin.set('');
+    this.enviando.set(true);
 
-    const accesoValido = this.authService.iniciarSesion(
-      usuario,
-      clave,
-    );
-
-    if (!accesoValido) {
-      this.errorLogin.set('Usuario o contraseña incorrectos.');
-      return;
-    }
-
-    void this.router.navigateByUrl('/resumen', {
-      replaceUrl: true,
+    this.authService.iniciarSesion(usuario, clave).subscribe({
+      next: () => {
+        void this.router.navigateByUrl('/resumen', {
+          replaceUrl: true,
+        });
+      },
+      error: (error: unknown) => {
+        this.errorLogin.set(
+          error instanceof Error
+            ? error.message
+            : 'No se pudo iniciar sesión. Revisa tus credenciales.',
+        );
+        this.enviando.set(false);
+      },
+      complete: () => this.enviando.set(false),
     });
   }
 }
