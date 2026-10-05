@@ -28,7 +28,7 @@ describe('ProductosService', () => {
     let result: unknown;
     service.listar().subscribe(products => result = products);
 
-    http.expectOne('http://localhost:8080/api/productos').flush([
+    http.expectOne('http://10.20.10.9:8490/api/productos').flush([
       {
         idProducto: 'PR01',
         nombre: 'Polera Deportiva Hombre',
@@ -37,10 +37,10 @@ describe('ProductosService', () => {
         idModelo: 1,
       },
     ]);
-    http.expectOne('http://localhost:8080/api/modelos').flush([
+    http.expectOne('http://10.20.10.9:8490/api/modelos').flush([
       { idModelo: 1, descripcion: 'Polera Deportiva' },
     ]);
-    http.expectOne('http://localhost:8080/api/productos-sedes').flush([
+    http.expectOne('http://10.20.10.9:8490/api/productos-sedes').flush([
       { stock: 100, idSede: 1, idProducto: 'PR01' },
       { stock: 30, idSede: 2, idProducto: 'PR01' },
     ]);
@@ -63,7 +63,7 @@ describe('ProductosService', () => {
     let result: unknown;
     service.listar(2).subscribe(products => result = products);
 
-    http.expectOne('http://localhost:8080/api/productos').flush([
+    http.expectOne('http://10.20.10.9:8490/api/productos').flush([
       {
         idProducto: 'PR01',
         nombre: 'Polera Deportiva Hombre',
@@ -72,10 +72,10 @@ describe('ProductosService', () => {
         idModelo: 1,
       },
     ]);
-    http.expectOne('http://localhost:8080/api/modelos').flush([
+    http.expectOne('http://10.20.10.9:8490/api/modelos').flush([
       { idModelo: 1, descripcion: 'Polera Deportiva' },
     ]);
-    http.expectOne('http://localhost:8080/api/productos-sedes').flush([
+    http.expectOne('http://10.20.10.9:8490/api/productos-sedes').flush([
       { stock: 100, idSede: 1, idProducto: 'PR01' },
       { stock: 30, idSede: 2, idProducto: 'PR01' },
     ]);
@@ -98,7 +98,7 @@ describe('ProductosService', () => {
     let result: unknown;
     service.listar(2, true).subscribe(products => result = products);
 
-    http.expectOne('http://localhost:8080/api/productos').flush([
+    http.expectOne('http://10.20.10.9:8490/api/productos').flush([
       {
         idProducto: 'PR01',
         nombre: 'Producto sin stock en sede 2',
@@ -114,10 +114,10 @@ describe('ProductosService', () => {
         idModelo: 1,
       },
     ]);
-    http.expectOne('http://localhost:8080/api/modelos').flush([
+    http.expectOne('http://10.20.10.9:8490/api/modelos').flush([
       { idModelo: 1, descripcion: 'Modelo' },
     ]);
-    http.expectOne('http://localhost:8080/api/productos-sedes').flush([
+    http.expectOne('http://10.20.10.9:8490/api/productos-sedes').flush([
       { stock: 20, idSede: 1, idProducto: 'PR01' },
       { stock: 0, idSede: 2, idProducto: 'PR01' },
       { stock: 10, idSede: 1, idProducto: 'PR02' },
@@ -133,7 +133,7 @@ describe('ProductosService', () => {
   it('deletes products using their encoded resource identifier', () => {
     service.eliminar('PR 01').subscribe();
 
-    const request = http.expectOne('http://localhost:8080/api/productos/PR%2001');
+    const request = http.expectOne('http://10.20.10.9:8490/api/productos/PR%2001');
     expect(request.request.method).toBe('DELETE');
     request.flush(null);
   });

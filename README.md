@@ -14,7 +14,7 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 ## Backend API
 
-The frontend calls the Spring Boot API at `http://localhost:8080/api` by default.
+The frontend calls the Spring Boot API at `http://10.20.10.9:8490/api` by default.
 Set `window.LIRIO_API_BASE_URL` in `public/runtime-config.js` to the deployed API
 base URL (including `/api`) before serving the generated frontend.
 The login screen uses `POST /auth/login` with `{ "correo": "...", "clave": "..." }`.
