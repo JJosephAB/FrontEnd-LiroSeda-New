@@ -1,1 +1,1 @@
-window.LIRIO_API_BASE_URL = 'http://10.20.10.9:8490/api';
+window.LIRIO_API_BASE_URL = 'https://backend.liroseda.com/api';
