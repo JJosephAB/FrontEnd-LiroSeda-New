@@ -42,7 +42,7 @@ describe('MovimientosService', () => {
 
     service.crearPedido(pedido).subscribe();
 
-    const request = http.expectOne('http://10.20.10.9:8490/api/pedidos');
+    const request = http.expectOne('https://liroseda.noudat.com/api/pedidos');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(pedido);
     request.flush(pedido);
@@ -65,7 +65,7 @@ describe('MovimientosService', () => {
 
     service.crearSalida(salida).subscribe();
 
-    const request = http.expectOne('http://10.20.10.9:8490/api/salidas');
+    const request = http.expectOne('https://liroseda.noudat.com/api/salidas');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(salida);
     request.flush(salida);
@@ -100,13 +100,13 @@ describe('MovimientosService', () => {
     };
 
     service.actualizarPedido(pedido.idPedido, pedido).subscribe();
-    const pedidoRequest = http.expectOne('http://10.20.10.9:8490/api/pedidos/PD0004');
+    const pedidoRequest = http.expectOne('https://liroseda.noudat.com/api/pedidos/PD0004');
     expect(pedidoRequest.request.method).toBe('PUT');
     expect(pedidoRequest.request.body).toEqual(pedido);
     pedidoRequest.flush(pedido);
 
     service.actualizarSalida(salida.idSalida, salida).subscribe();
-    const salidaRequest = http.expectOne('http://10.20.10.9:8490/api/salidas/S00004');
+    const salidaRequest = http.expectOne('https://liroseda.noudat.com/api/salidas/S00004');
     expect(salidaRequest.request.method).toBe('PUT');
     expect(salidaRequest.request.body).toEqual(salida);
     salidaRequest.flush(salida);
@@ -138,13 +138,13 @@ describe('MovimientosService', () => {
     };
 
     service.crearEntrada(entrada).subscribe();
-    const createRequest = http.expectOne('http://10.20.10.9:8490/api/entradas');
+    const createRequest = http.expectOne('https://liroseda.noudat.com/api/entradas');
     expect(createRequest.request.method).toBe('POST');
     expect(createRequest.request.body).toEqual(entrada);
     createRequest.flush({ ...entrada, importeTotal: 249.3 });
 
     service.actualizarEntrada(entrada.idEntrada, entrada).subscribe();
-    const updateRequest = http.expectOne('http://10.20.10.9:8490/api/entradas/E00005');
+    const updateRequest = http.expectOne('https://liroseda.noudat.com/api/entradas/E00005');
     expect(updateRequest.request.method).toBe('PUT');
     expect(updateRequest.request.body).toEqual(entrada);
     updateRequest.flush({ ...entrada, importeTotal: 249.3 });
@@ -159,15 +159,15 @@ describe('MovimientosService', () => {
     service.listarEntradas(2).subscribe(result => entradasResult = result);
     service.listarSalidas(2).subscribe(result => salidasResult = result);
 
-    http.expectOne('http://10.20.10.9:8490/api/pedidos').flush([
+    http.expectOne('https://liroseda.noudat.com/api/pedidos').flush([
       { idPedido: 'PD01', idSedeUsuario: 1, detalles: [] },
       { idPedido: 'PD02', idSedeUsuario: 2, detalles: [] },
     ]);
-    http.expectOne('http://10.20.10.9:8490/api/entradas').flush([
+    http.expectOne('https://liroseda.noudat.com/api/entradas').flush([
       { idEntrada: 'E01', idSedeUsuario: 1, detalles: [] },
       { idEntrada: 'E02', idSedeUsuario: 2, detalles: [] },
     ]);
-    http.expectOne('http://10.20.10.9:8490/api/salidas').flush([
+    http.expectOne('https://liroseda.noudat.com/api/salidas').flush([
       { idSalida: 'S01', idSedeUsuario: 1, detalles: [] },
       { idSalida: 'S02', idSedeUsuario: 2, detalles: [] },
     ]);

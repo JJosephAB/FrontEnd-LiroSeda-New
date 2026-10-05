@@ -23,7 +23,7 @@ describe('ProveedoresService', () => {
   it('deletes suppliers using their encoded resource identifier', () => {
     service.eliminar('P 001').subscribe();
 
-    const request = http.expectOne('http://10.20.10.9:8490/api/proveedores/P%20001');
+    const request = http.expectOne('https://liroseda.noudat.com/api/proveedores/P%20001');
     expect(request.request.method).toBe('DELETE');
     request.flush(null);
   });
@@ -40,7 +40,7 @@ describe('ProveedoresService', () => {
 
     service.actualizar(proveedor).subscribe();
 
-    const request = http.expectOne('http://10.20.10.9:8490/api/proveedores/P001');
+    const request = http.expectOne('https://liroseda.noudat.com/api/proveedores/P001');
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual(proveedor);
     request.flush(proveedor);

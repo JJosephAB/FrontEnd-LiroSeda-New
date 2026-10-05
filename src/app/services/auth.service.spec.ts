@@ -34,7 +34,7 @@ describe('AuthService', () => {
       completed = true;
     });
 
-    const request = http.expectOne('http://10.20.10.9:8490/api/auth/login');
+    const request = http.expectOne('https://liroseda.noudat.com/api/auth/login');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
       correo: 'admin@lirio.com',

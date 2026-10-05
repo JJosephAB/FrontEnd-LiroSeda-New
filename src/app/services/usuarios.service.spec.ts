@@ -24,7 +24,7 @@ describe('UsuariosService', () => {
     let result: unknown;
     service.usuarioActual().subscribe(usuario => result = usuario);
 
-    const request = http.expectOne('http://10.20.10.9:8490/api/usuarios/me');
+    const request = http.expectOne('https://liroseda.noudat.com/api/usuarios/me');
     expect(request.request.method).toBe('GET');
     request.flush({
       idUsuario: 5,
