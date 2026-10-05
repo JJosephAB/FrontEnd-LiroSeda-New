@@ -10,7 +10,7 @@
     </h1>
 
     <p class="mt-2 text-xs text-muted">
-      Organiza tus prendas, consulta existencias y mantén todo al día.
+      Consulta los productos con existencias en la sede asignada a tu cuenta.
     </p>
   </div>
 
@@ -36,9 +36,9 @@
     </span>
 
     <div>
-      <p class="text-[11px] text-muted">Productos en catálogo</p>
+      <p class="text-[11px] text-muted">Productos con stock en tu sede</p>
       <strong class="mt-1 block text-xl">
-        {{ productos.length }}
+        {{ productosFiltrados.length }}
       </strong>
     </div>
   </article>
@@ -73,27 +73,6 @@
     </div>
   </article>
 </section>
-
-<div class="mb-5 flex flex-wrap items-end gap-3 rounded-xl border border-linea bg-superficie p-4">
-  <label for="sede-stock-productos" class="flex min-w-[220px] flex-1 flex-col gap-2 text-[10px] text-muted">
-    Sede del inventario
-    <select
-      id="sede-stock-productos"
-      [ngModel]="sedeSeleccionada"
-      (ngModelChange)="cambiarSede($event)"
-      class="rounded-lg border border-linea bg-fondo px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca"
-    >
-      @for (sede of sedes; track sede.idSede) {
-        <option [value]="sede.idSede">{{ sede.descripcion }}</option>
-      }
-    </select>
-  </label>
-  @if (usuarioActual) {
-    <span class="text-[10px] text-muted">
-      Sede asignada a tu cuenta: {{ usuarioActual.idSede }}
-    </span>
-  }
-</div>
 
 <!-- Listado -->
 <section
@@ -165,7 +144,6 @@
       <option value="">Todo el stock</option>
       <option value="disponible">Disponible</option>
       <option value="bajo">Stock bajo</option>
-      <option value="agotado">Agotado</option>
     </select>
   </div>
 
@@ -180,6 +158,11 @@
 @if (errorCarga()) {
   <p role="alert" class="mx-6 mb-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">
     {{ errorCarga() }}
+  </p>
+}
+@if (errorEliminacion()) {
+  <p role="alert" class="mx-6 mb-4 rounded-lg bg-[#fbefef] px-3 py-2.5 text-xs text-[#b7666e]">
+    {{ errorEliminacion() }}
   </p>
 }
   <div class="overflow-x-auto">
@@ -254,6 +237,11 @@
                 class="rounded-lg border border-linea px-3 py-2 text-[10px] font-semibold text-marca hover:bg-marca-suave">
                 Editar
               </button>
+              <button type="button" (click)="eliminarProducto(producto)"
+                [disabled]="eliminandoProductoId() === producto.idproducto"
+                class="ml-2 rounded-lg border border-[#dc2626]/30 px-3 py-2 text-[10px] font-semibold text-[#b91c1c] hover:bg-[#fbefef] disabled:cursor-wait disabled:opacity-50">
+                {{ eliminandoProductoId() === producto.idproducto ? 'Eliminando…' : 'Eliminar' }}
+              </button>
             </td>
           </tr>
         } @empty {
@@ -269,7 +257,7 @@
 
   <div class="px-6 py-4 text-[11px] text-muted">
   Mostrando {{ productosFiltrados.length }} de {{ productos.length }}
-  productos · Stock de la sede seleccionada
+  productos con existencias · Sede asignada a tu cuenta
 </div>
 </section>
 
@@ -342,7 +330,7 @@
       {{ editandoProductoId ? 'Sede del stock' : 'Sede del stock inicial' }} *
       <select formControlName="sedeId"
         class="rounded-lg border border-linea bg-superficie px-3 py-2.5 text-xs text-tinta focus:outline-2 focus:outline-marca">
-        <option [ngValue]="0">Seleccionar sede</option>
+        <option [ngValue]="0">Cargando sede…</option>
         @for (sede of sedes; track sede.idSede) {
           <option [ngValue]="sede.idSede">{{ sede.descripcion }}</option>
         }

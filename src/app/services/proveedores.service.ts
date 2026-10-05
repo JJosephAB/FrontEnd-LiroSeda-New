@@ -27,4 +27,14 @@ export class ProveedoresService {
     return this.api.post('/proveedores', proveedor);
   }
 
+  actualizar(proveedor: NuevoProveedor): Observable<unknown> {
+    return this.api.put(
+      `/proveedores/${encodeURIComponent(proveedor.idProveedor)}`,
+      proveedor,
+    );
+  }
+
+  eliminar(idProveedor: string): Observable<void> {
+    return this.api.delete<void>(`/proveedores/${encodeURIComponent(idProveedor)}`);
+  }
 }

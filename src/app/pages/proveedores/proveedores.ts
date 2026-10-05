@@ -19,6 +19,9 @@ export class Proveedores implements OnInit {
   readonly errorGuardado = signal('');
   readonly guardando = signal(false);
   readonly cargando = signal(false);
+  readonly errorEliminacion = signal('');
+  readonly eliminandoProveedorId = signal<string | null>(null);
+  proveedorEditando: ProveedorApi | null = null;
 
   get proveedoresFiltrados(): ProveedorApi[] {
     const texto = this.normalizar(this.busqueda.trim());
@@ -32,6 +35,58 @@ export class Proveedores implements OnInit {
 
   limpiarBusqueda(): void {
     this.busqueda = '';
+  }
+
+  abrirNuevoProveedor(formulario: HTMLFormElement, dialog: HTMLDialogElement): void {
+    this.proveedorEditando = null;
+    this.errorGuardado.set('');
+    formulario.reset();
+    dialog.showModal();
+  }
+
+  editarProveedor(
+    proveedor: ProveedorApi,
+    formulario: HTMLFormElement,
+    dialog: HTMLDialogElement,
+  ): void {
+    this.proveedorEditando = proveedor;
+    this.errorGuardado.set('');
+    formulario.reset();
+    for (const [campo, valor] of Object.entries({
+      idproveedor: proveedor.idProveedor,
+      nombre: proveedor.nombre,
+      ruc: proveedor.ruc ?? '',
+      correo: proveedor.correo ?? '',
+      telefono: proveedor.telefono ?? '',
+      direccion: proveedor.direccion ?? '',
+    })) {
+      const input = formulario.elements.namedItem(campo);
+      if (input instanceof HTMLInputElement) input.value = valor;
+    }
+    dialog.showModal();
+  }
+
+  eliminarProveedor(proveedor: ProveedorApi): void {
+    if (!window.confirm(
+      `¿Eliminar al proveedor "${proveedor.nombre}" (${proveedor.idProveedor})? Si tiene entradas asociadas, el backend puede impedir la eliminación.`,
+    )) return;
+
+    this.errorEliminacion.set('');
+    this.eliminandoProveedorId.set(proveedor.idProveedor);
+    this.proveedoresService.eliminar(proveedor.idProveedor).subscribe({
+      next: () => {
+        this.proveedores = this.proveedores.filter(
+          actual => actual.idProveedor !== proveedor.idProveedor,
+        );
+        this.eliminandoProveedorId.set(null);
+        this.changeDetector.markForCheck();
+      },
+      error: error => {
+        this.errorEliminacion.set(this.mensajeError(error));
+        this.eliminandoProveedorId.set(null);
+        this.changeDetector.markForCheck();
+      },
+    });
   }
 
   guardarProveedor(formulario: HTMLFormElement, dialog: HTMLDialogElement): void {
@@ -48,10 +103,14 @@ export class Proveedores implements OnInit {
     };
 
     this.guardando.set(true);
-    this.proveedoresService.crear(proveedor).subscribe({
+    const solicitud = this.proveedorEditando
+      ? this.proveedoresService.actualizar(proveedor)
+      : this.proveedoresService.crear(proveedor);
+    solicitud.subscribe({
       next: () => {
         dialog.close();
         formulario.reset();
+        this.proveedorEditando = null;
         this.cargarProveedores();
         this.guardando.set(false);
         this.changeDetector.markForCheck();
@@ -88,6 +147,10 @@ export class Proveedores implements OnInit {
   private mensajeError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 0) return 'No se pudo conectar con el backend.';
+      if (typeof error.error?.message === 'string') return error.error.message;
+      if (error.status === 409 || error.status === 500) {
+        return 'No se pudo guardar el proveedor. Comprueba sus datos y que no existan registros relacionados.';
+      }
       return `El backend respondió con error ${error.status}.`;
     }
     return 'Ocurrió un error al procesar la solicitud.';

@@ -41,7 +41,7 @@ export interface NuevoProducto {
 export class ProductosService {
   private readonly api = inject(ApiService);
 
-  listar(idSede?: number): Observable<ProductoListado[]> {
+  listar(idSede?: number, soloConStock = false): Observable<ProductoListado[]> {
     return forkJoin({
       productos: this.api.get<ProductoApi[]>('/productos'),
       modelos: this.api.get<ModeloApi[]>('/modelos'),
@@ -64,7 +64,7 @@ export class ProductosService {
           );
         }
 
-        return productos.map(producto => ({
+        const listado = productos.map(producto => ({
           idproducto: producto.idProducto,
           nombre: producto.nombre,
           modelo:
@@ -76,6 +76,9 @@ export class ProductosService {
           tieneRegistroSede: registroSede.has(producto.idProducto),
           precio: Number(producto.precio),
         }));
+        return soloConStock
+          ? listado.filter(producto => producto.stock > 0)
+          : listado;
       }),
     );
   }
@@ -97,6 +100,10 @@ export class ProductosService {
       `/productos/${encodeURIComponent(producto.idProducto)}`,
       producto,
     );
+  }
+
+  eliminar(idProducto: string): Observable<void> {
+    return this.api.delete<void>(`/productos/${encodeURIComponent(idProducto)}`);
   }
 
   crearStock(productoId: string, sedeId: number, stock: number): Observable<unknown> {

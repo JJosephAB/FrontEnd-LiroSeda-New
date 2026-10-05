@@ -37,7 +37,9 @@ export class Productos implements OnInit {
   stockSeleccionado = '';
   errorCarga = signal('');
   errorGuardado = signal('');
+  errorEliminacion = signal('');
   guardando = signal(false);
+  eliminandoProductoId = signal<string | null>(null);
   editandoProductoId: string | null = null;
 
   get modelosDisponibles(): string[] {
@@ -78,7 +80,7 @@ export class Productos implements OnInit {
     });
     this.errorGuardado.set('');
     this.editandoProductoId = null;
-    this.productoForm.controls.sedeId.enable();
+    this.productoForm.controls.sedeId.disable();
     dialog.showModal();
   }
 
@@ -99,15 +101,33 @@ export class Productos implements OnInit {
     dialog.showModal();
   }
 
-  cambiarSede(idSede: string): void {
-    this.sedeSeleccionada = idSede;
-    this.cargarProductos(idSede ? Number(idSede) : undefined);
-  }
-
   limpiarFiltros(): void {
     this.busqueda = '';
     this.modeloSeleccionado = '';
     this.stockSeleccionado = '';
+  }
+
+  eliminarProducto(producto: ProductoListado): void {
+    if (!window.confirm(
+      `¿Eliminar el producto "${producto.nombre}" (${producto.idproducto})? Si tiene existencias o está asociado a movimientos, el backend puede impedir la eliminación.`,
+    )) return;
+
+    this.errorEliminacion.set('');
+    this.eliminandoProductoId.set(producto.idproducto);
+    this.productosService.eliminar(producto.idproducto).subscribe({
+      next: () => {
+        this.productos = this.productos.filter(
+          actual => actual.idproducto !== producto.idproducto,
+        );
+        this.eliminandoProductoId.set(null);
+        this.changeDetector.markForCheck();
+      },
+      error: (error: unknown) => {
+        this.errorEliminacion.set(this.mensajeError(error));
+        this.eliminandoProductoId.set(null);
+        this.changeDetector.markForCheck();
+      },
+    });
   }
 
   guardarProducto(dialog: HTMLDialogElement): void {
@@ -152,9 +172,7 @@ export class Productos implements OnInit {
           next: () => {
             dialog.close();
             this.editandoProductoId = null;
-            this.cargarProductos(
-              this.sedeSeleccionada ? Number(this.sedeSeleccionada) : undefined,
-            );
+            this.cargarProductos(value.sedeId);
             this.guardando.set(false);
             this.changeDetector.markForCheck();
           },
@@ -162,9 +180,7 @@ export class Productos implements OnInit {
             this.errorGuardado.set(
               `Se guardó el producto, pero no se pudo guardar su stock en la sede. ${this.mensajeError(error)}`,
             );
-            this.cargarProductos(
-              this.sedeSeleccionada ? Number(this.sedeSeleccionada) : undefined,
-            );
+            this.cargarProductos(value.sedeId);
             this.guardando.set(false);
             this.changeDetector.markForCheck();
           },
@@ -214,8 +230,8 @@ export class Productos implements OnInit {
     });
   }
 
-  private cargarProductos(idSede?: number): void {
-    this.productosService.listar(idSede).subscribe({
+  private cargarProductos(idSede: number): void {
+    this.productosService.listar(idSede, true).subscribe({
       next: productos => {
         this.productos = productos;
         this.errorCarga.set('');
@@ -231,6 +247,10 @@ export class Productos implements OnInit {
   private mensajeError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 0) return 'No se pudo conectar con el backend.';
+      if (typeof error.error?.message === 'string') return error.error.message;
+      if (error.status === 409 || error.status === 500) {
+        return 'No se pudo eliminar el producto. Puede estar relacionado con existencias o movimientos.';
+      }
       return `El backend respondió con error ${error.status}.`;
     }
     return 'Ocurrió un error al procesar la solicitud.';
