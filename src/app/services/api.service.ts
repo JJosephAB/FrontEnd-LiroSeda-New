@@ -14,7 +14,7 @@ declare global {
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = (
-    window.LIRIO_API_BASE_URL ?? 'https://liroseda.noudat.com./api'
+    window.LIRIO_API_BASE_URL ?? 'https://backendliroseda.noudat.com/api'
   ).replace(/\/+$/, '');
 
   get<T>(path: string): Observable<T> {

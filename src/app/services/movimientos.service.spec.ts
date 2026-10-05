@@ -159,15 +159,15 @@ describe('MovimientosService', () => {
     service.listarEntradas(2).subscribe(result => entradasResult = result);
     service.listarSalidas(2).subscribe(result => salidasResult = result);
 
-    http.expectOne('https://liroseda.noudat.com/api/pedidos').flush([
+    http.expectOne('https://backendliroseda.noudat.com/api/pedidos').flush([
       { idPedido: 'PD01', idSedeUsuario: 1, detalles: [] },
       { idPedido: 'PD02', idSedeUsuario: 2, detalles: [] },
     ]);
-    http.expectOne('https://liroseda.noudat.com/api/entradas').flush([
+    http.expectOne('https://backendliroseda.noudat.com/api/entradas').flush([
       { idEntrada: 'E01', idSedeUsuario: 1, detalles: [] },
       { idEntrada: 'E02', idSedeUsuario: 2, detalles: [] },
     ]);
-    http.expectOne('https://liroseda.noudat.com/api/salidas').flush([
+    http.expectOne('https://backendliroseda.noudat.com/api/salidas').flush([
       { idSalida: 'S01', idSedeUsuario: 1, detalles: [] },
       { idSalida: 'S02', idSedeUsuario: 2, detalles: [] },
     ]);
